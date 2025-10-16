@@ -56,3 +56,24 @@ INSERT INTO `PedidoProducto`(`pedido_id`, `producto_id`, `cantidad`) VALUES
 (5, 8, 1),
 (5, 9, 2),
 (6, 10, 1);
+
+
+INSERT INTO `Usuarios`(`correo`,`apellido`, `nombre`) VALUES
+('diego@gmail.com', 'Rueda', 'Adriana');
+
+
+INSERT INTO `Pedidos`(`usuario_id_fk`, `total`,`estado`) VALUES
+(1, 150.00, 'entregado');
+
+INSERT INTO `PedidoProducto`(`pedido_id_fk`, `producto_id_fk`, `cantidad`) VALUES(7, 1, 0),(7, 2, -10);
+
+UPDATE `PedidoProducto` SET cantidad = 1 WHERE cantidad < 1;
+
+DELETE FROM `Productos` WHERE producto_id > 10 AND producto_id <= 20;
+
+INSERT INTO `Productos`(`nombre`, `precio_unitario`, `precio_venta`) VALUES('Zapato Deportivo El Mike', 225.00, 390.00);
+
+UPDATE `Pedidos` SET fecha_pedido = CURRENT_DATE WHERE fecha_pedido is NULL;
+
+INSERT INTO `Pedidos`(`usuario_id_fk`, `fecha_pedido`, `total`) VALUES
+(1, '2023-10-01',190.00);

@@ -11,27 +11,28 @@ SELECT `pedido_id`, `producto_id`, `cantidad` FROM `PedidoProducto`
 WHERE `pedido_id` = 1;
 
 
---  mostrar pedidos de un Cliente (x)
+-- Mostrar pedidos de un Cliente (x)
 SELECT u.*, p.*
-FROM `usuarios` as u, `pedidos` p
-WHERE u.usuarios_id = p.usuarios_id;
+FROM `Usuarios` as u, `Pedidos` p
+WHERE u.usuario_id = p.usuario_id;
 
 SELECT u.correo, p.fecha_pedido, p.pedido_id, pr.nombre, pr.precio_unitario, pr.precio_venta, pp.cantidad
-FROM `usuarios` as u
-INNER JOIN `pedidos` p ON u.usuarios_id = p.usuarios_id
+FROM `Usuarios` as u
+INNER JOIN `Pedidos` p ON u.usuario_id = p.usuario_id
 INNER JOIN `PedidoProducto` pp ON p.pedido_id = pp.pedido_id
-INNER JOIN `Producto` pr ON pp.producto_id = pr.producto_id;
+INNER JOIN `Productos` pr ON pp.producto_id = pr.producto_id;
 
-SELECT u.correo, p.pedido_id,  p.fecha_pedido
-FROM `usuarios` as u
-INNER JOIN `pedidos` p ON u.usuarios_id = p.usuarios_id
-INNER JOIN `PedidoProducto` pp ON p.pedido_id = pp.pedido_id
-INNER JOIN `Producto` pr ON pp.producto_id = pr.producto_id;
 
-SELECT u.correo, p.pedido_id, p.fecha_pedido, SUM(pp.cantidad) as 'total_items',
-FROM `usuarios` as u
-INNER JOIN `pedidos` p ON u.usuarios_id = p.usuarios_id
+SELECT u.correo, p.pedido_id, p.fecha_pedido, SUM(pp.cantidad) as 'total_items', pr.nombre
+FROM `Usuarios` as u
+INNER JOIN `Pedidos` p ON u.usuario_id = p.usuario_id
 INNER JOIN `PedidoProducto` as pp ON p.pedido_id = pp.pedido_id
-WHERE u.correo = 'cristiandres1317@gmial.com'
-GROUP BY p.pedido_id;
+INNER JOIN `Productos` as pr ON pp.producto_id = pr.producto_id
+WHERE u.correo = 'diego@gmail.com'
+GROUP BY p.pedido_id, pr.nombre;
 
+-- Se requiere obtener el total de money de cada pedido realizado por nuestros usuarios
+
+-- Se requiere saber la cantidad total de productos vendidos en una fecha especifica
+
+-- Se requiere saber la cantidad de zapatos deportivos vendidos en un rango de fecha especifica [BETWEEN date1 AND date2]
