@@ -192,3 +192,43 @@ FROM Pedidos p;
 
 -- SE REQUIERE UNA FUNCION QUE RETORNE LA CANTIDAD DE DINERO, DE PEDIDOS, POR UN RANGO DE FECHAS ESPECIFICOS.
 -- SE REQUIERE UNA FUNCION PARA SABER LA CANTIDAD P0OR PRODUCTOS VENDIDOS 
+
+DELIMITER $$
+DROP FUNCTION IF EXISTS fn_total_ventas_rango $$
+CREATE FUNCTION fn_total_ventas_rango(p_fecha_inicio DATE, p_fecha_fin DATE)
+RETURNS DECIMAL(10,2)
+DETERMINISTIC
+BEGIN
+  DECLARE v_total DECIMAL(10,2);
+
+  SELECT SUM(pp.cantidad * pr.precio_venta) INTO v_total
+  FROM Pedidos p 
+  INNER JOIN PedidoProducto pp ON p.pedido_id = pp.pedido_id_fk
+  INNER JOIN Productos pr ON pp.producto_id_fk = pr.producto_id
+  WHERE p.fecha_pedido BETWEEN p_fecha_inicio AND p_fecha_fin;
+
+  RETURN v_total;
+END $$
+DELIMITER ;
+
+SELECT fn_total_ventas_rango('2023-10-03', CURRENT_DATE) as TotalVentas;
+SELECT fn_total_ventas_rango('2023-10-05', '2023-10-06') as TotalVentas;
+
+SELECT
+SELECT
+
+DELIMITER $$
+CREATE TRIGGER tg_calcular_total_item_pedido
+AFTER INSERT ON `PedidoProducto`
+FOR EACH ROW
+BEGIN
+  -- OLD - Valores Antiguos
+  -- NEW - Valores Nuevos
+
+  DECLARE v_precio_unitario DECIMAL (10,2);
+  SET v_precio_unitario = (SELECT preico_venta FROM `Productos` WHERE producto_id = NEW.producto_id_fk);
+  UPDATE `Pedidos` SET total = total + (NEW.cantidad * v_precio_unitario) WHERE pedido_id = NEW.pedido_id_fk;
+END
+$$
+
+DELIMITER ;
