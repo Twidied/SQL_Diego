@@ -232,3 +232,127 @@ END
 $$
 
 DELIMITER ;
+
+SELECT * FROM Pedidos WHERE pedido_id = 15; -- 15
+SELECT * FROM `Productos` WHERE producto_id = 2;
+INSERT INTO PedidoProducto VALUES(15, 2, 1);
+
+DELIMITER $$
+CREATE TRIGGER tg_re_calcular_total_item_pedido
+AFTER DELETE ON `PedidoProducto`
+FOR EACH ROW
+BEGIN
+  DECLARE v_precio_unitario DECIMAL(10,2);
+
+  SET v_precio_unitario = (SELECT precio_venta FROM `Productos` WHERE producto_id = OLD.producto_id_fk);
+
+  UPDATE `Pedidos` SET total = total - (OLD.cantidad * v_precio_unitario) WHERE pedido_id = OLD.pedido_id_fk;
+END
+$$
+
+DELIMITER ;
+
+SELECT * FROM Pedidos WHERE pedido_id = 15; -- 15
+
+DELETE FROM `PedidoProducto` WHERE producto_id_fk = 2;
+
+
+DELIMITER $$
+CREATE TRIGGER tg_update_calcular_total_item_pedido
+AFTER UPDATE ON `PedidoProducto`
+FOR EACH ROW
+BEGIN
+  DECLARE v_precio_unitario DECIMAL(10,2);
+  DECLARE v_precio_old DECIMAL(10,2);
+  DECLARE v_precio_new DECIMAL(10,2);
+  -- OLD.producto_id_fk = NEW.producto_id_fk
+  SET v_precio_unitario = (SELECT precio_venta FROM `Productos` WHERE producto_id = OLD.producto_id_fk);
+
+  SET v_precio_old = OLD.cantidad * v_precio_unitario;
+  SET v_precio_new = NEW.cantidad * v_precio_unitario;
+
+  UPDATE `Pedidos` SET total = (total - v_precio_old) + v_precio_new WHERE pedido_id = OLD.pedido_id_fk;
+
+END
+$$
+
+DELIMITER ;
+
+
+SELECT * FROM Pedidos WHERE pedido_id = 15;
+
+SELECT * FROM PedidoProducto WHERE pedido_id_fk = 15; -- 15
+UPDATE PedidoProducto SET cantidad = 5 WHERE pedido_id_fk = 15 AND producto_id_fk = 1;
+
+
+DELIMITER $$
+CREATE TRIGGER tg_update_check_total_item_pedido
+BEFORE UPDATE ON `PedidoProducto`
+FOR EACH ROW
+BEGIN
+  DECLARE v_precio_unitario DECIMAL(10,2);
+  DECLARE v_precio_old DECIMAL(10,2);
+  DECLARE v_total_actual DECIMAL(10,2);
+  -- OLD.producto_id_fk = NEW.producto_id_fk
+  SET v_precio_unitario = (SELECT precio_venta FROM `Productos` WHERE producto_id = OLD.producto_id_fk);
+  SET v_total_actual = (SELECT total FROM `Pedidos` WHERE pedido_id = OLD.pedido_id_fk);
+  SET v_precio_old = OLD.cantidad * v_precio_unitario;
+  IF OLD.producto_id_fk <> NEW.producto_id_fk THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El producto_id_fk son diferentes';
+  END IF;
+  IF (v_total_actual - v_precio_old) < 0 THEN
+      SIGNAL SQLSTATE '45001' SET MESSAGE_TEXT = 'El total no se puede calcular porque la diferencia es negativa';
+  END IF;
+END
+$$
+DELIMITER ;
+
+SELECT * FROM Pedidos WHERE pedido_id = 15;
+
+SELECT * FROM PedidoProducto WHERE pedido_id_fk = 15; -- 15
+UPDATE PedidoProducto SET cantidad = 1 WHERE pedido_id_fk = 15 AND producto_id_fk = 1;
+
+UPDATE `Productos` SET precio_venta = 150 WHERE producto_id = 1;
+
+
+SET GLOBAL event_scheduler = ON;
+
+
+CREATE TABLE `Reportes`(
+  `reporte_id` INT AUTO_INCREMENT,
+  `fecha_reporte` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `total` DECIMAL(10,2) NOT NULL,
+  PRIMARY KEY(`reporte_id`)
+);
+
+
+
+DELIMITER //
+
+//
+CREATE EVENT ev_reporte _diario_ventas
+ON SCHEDULE EVENT 1 DAY -- AT '2025-10-21 12:00:00'
+  STARTS NOW() + INTERVAL 1 MINUTE
+  ENDS NOW() + INTERVAL 1 MONTH
+  ON COMPLETION PRESERVE -- NOT PRESERVE
+  DO
+  BEGIN
+    INSERT INTO `EventosLogs`(`evento`) VALUES('ev_reporte_diario_ventas');
+    INSERT INTO `Reportes`(`total`) VALUES();
+  END
+
+SELECT fn_total_ventas_rango(NOW(), NOW() as) TotalVentas;
+
+INSERT INTO `Pedidos` VALUES(NULL, 2, NOW(), 0.00);
+SELECT * FROM `Pedidos`
+INSERT INTO `PedidoProducto` VALUES(LAST_INSERT_ID(), 1, 2);
+INSERT INTO `PedidoProducto` VALUES(LAST_INSERT_ID(), 2, 1);
+INSERT INTO `PedidoProducto` VALUES(LAST_INSERT_ID(), 3, 3);
+
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+
+//
+DELIMITER;
+
+ ̣· mmnm
